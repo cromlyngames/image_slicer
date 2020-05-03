@@ -1,12 +1,18 @@
 '''
 Main functionality of ``image_slicer``.
+Minor changes to 0.3 version on github
+( https://github.com/cromlyngames/image_slicer/commit/8c4d97b512df6094926b2f411c140b57bfe0dc0a )
+NOTE that the 0.3 version on PIL is different and incorrect.
 '''
 import os
 from math import sqrt, ceil, floor
 
 from PIL import Image
 
-from .helpers import get_basename
+
+def get_basename(filename):
+    """Strip path and extension. Return basename."""
+    return os.path.splitext(os.path.basename(filename))[0]
 
 
 class Tile(object):
@@ -100,7 +106,7 @@ def join(tiles, width=0, height=0):
 
 def validate_image(image, number_tiles):
     """Basic sanity checks prior to performing a split."""
-    TILE_LIMIT = 99 * 99
+    TILE_LIMIT = 9999 * 9999  # pb I have increase it
 
     try:
         number_tiles = int(number_tiles)
@@ -113,7 +119,7 @@ def validate_image(image, number_tiles):
 
 def validate_image_col_row(image , col , row):
     """Basic checks for columns and rows values"""
-    SPLIT_LIMIT = 99
+    SPLIT_LIMIT = 9999  # PB i had to increase it
 
     try:
         col = int(col)
@@ -128,7 +134,7 @@ def validate_image_col_row(image , col , row):
     if col == 1 and row == 1:
         raise ValueError('There is nothing to divide. You asked for the entire image.')
 
-def slice(filename, number_tiles=None, col=None, row=None, 
+def slice(filename, col=None, row=None, 
           save=True, DecompressionBombWarning=True):
     """
     Split an image into a specified number of tiles.
@@ -152,14 +158,9 @@ def slice(filename, number_tiles=None, col=None, row=None,
 
     columns = 0
     rows = 0
-    if number_tiles:
-        validate_image(im, number_tiles)
-        columns, rows = calc_columns_rows(number_tiles)
-#        extras = (columns * rows) - number_tiles # TODO: not used
-    else:
-        validate_image_col_row(im, col, row)
-        columns = col
-        rows = row
+    validate_image_col_row(im, col, row)
+    columns = col
+    rows = row
 
 
     tile_w, tile_h = int(floor(im_w / columns)), int(floor(im_h / rows))
